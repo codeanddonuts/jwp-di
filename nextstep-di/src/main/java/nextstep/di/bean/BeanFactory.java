@@ -32,7 +32,7 @@ public class BeanFactory {
                 this.configBeansToInstantiate.keySet()
         ).flatMap(Collection::stream)
         .forEach(type -> {
-            logger.debug("{}", type);
+            logger.debug("Bean Initialization Failed: {}", type);
             storeAndRetrieveBean(type);
         });
         this.configBeanGenMethodsContainers.clear();
@@ -67,11 +67,11 @@ public class BeanFactory {
                         .orElseGet(() -> instantiateClasspathBean(type));
     }
 
-    private Object instantiateConfigBean(Method f) {
+    private Object instantiateConfigBean(Method beanGenerator) {
         try {
-            return f.invoke(
-                    this.configBeanGenMethodsContainers.get(f.getDeclaringClass()),
-                    convertParamsToArgsWithBean(f)
+            return beanGenerator.invoke(
+                    this.configBeanGenMethodsContainers.get(beanGenerator.getDeclaringClass()),
+                    convertParamsToArgsWithBean(beanGenerator)
             );
         } catch (Exception e) {
             logger.error(e.getMessage());
@@ -99,7 +99,7 @@ public class BeanFactory {
             return cons.newInstance(convertParamsToArgsWithBean(cons));
         } catch (Exception e) {
             logger.error(e.getMessage());
-            return null;
+            throw new BeanFactoryInitFailedException(e);
         }
     }
 
