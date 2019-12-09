@@ -1,5 +1,7 @@
 package slipp;
 
+import nextstep.SlippConfiguration;
+import nextstep.di.bean.ApplicationContext;
 import nextstep.mvc.DispatcherServlet;
 import nextstep.mvc.asis.ControllerHandlerAdapter;
 import nextstep.mvc.tobe.AnnotationHandlerMapping;
@@ -12,21 +14,22 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 
-public class SlippWebApplicationInitializer  implements WebApplicationInitializer {
-    private static final Logger log = LoggerFactory.getLogger(SlippWebApplicationInitializer.class);
+public class SlippWebApplicationInitializer implements WebApplicationInitializer {
+    private static final Logger logger = LoggerFactory.getLogger(SlippWebApplicationInitializer.class);
 
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
-        DispatcherServlet dispatcherServlet = new DispatcherServlet();
-        dispatcherServlet.addHandlerMpping(new AnnotationHandlerMapping("slipp.controller"));
+        final DispatcherServlet dispatcherServlet = new DispatcherServlet();
+        final ApplicationContext applicationContext = new ApplicationContext(SlippConfiguration.class);
+        dispatcherServlet.addHandlerMapping(new AnnotationHandlerMapping(applicationContext));
 
         dispatcherServlet.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
         dispatcherServlet.addHandlerAdapter(new ControllerHandlerAdapter());
 
-        ServletRegistration.Dynamic dispatcher = servletContext.addServlet("dispatcher", dispatcherServlet);
+        final ServletRegistration.Dynamic dispatcher = servletContext.addServlet("dispatcher", dispatcherServlet);
         dispatcher.setLoadOnStartup(1);
         dispatcher.addMapping("/");
 
-        log.info("Start MyWebApplication Initializer");
+        logger.info("Start MyWebApplication Initializer");
     }
 }
